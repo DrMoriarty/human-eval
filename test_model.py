@@ -101,6 +101,9 @@ def main():
     else:
         model_name = args.url
         url = args.url.rstrip("/")
+        if not wait_for_server(url, timeout=5):
+            print(f"Server is not reachable at {url}", file=sys.stderr)
+            sys.exit(1)
 
     try:
         problems = read_problems()
