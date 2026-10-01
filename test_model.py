@@ -23,6 +23,8 @@ from datetime import datetime
 
 from tqdm import tqdm
 
+from urllib.parse import urlparse
+
 from human_eval.data import read_problems, write_jsonl
 from human_eval.evaluation import evaluate_functional_correctness
 
@@ -99,8 +101,17 @@ def main():
             started_proc.terminate()
             sys.exit(1)
     else:
-        model_name = args.url
-        url = args.url.rstrip("/")
+        url = args.url.strip()
+        if "://" not in url:
+            url = "http://" + url
+        parsed = urlparse(url)
+        if parsed.hostname is None or parsed.port is None:
+            print(
+                f"Invalid URL: {args.url!r} (expected e.g. http://host:8080 — note the port)",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        model_name = url
         if not wait_for_server(url, timeout=5):
             print(f"Server is not reachable at {url}", file=sys.stderr)
             sys.exit(1)
